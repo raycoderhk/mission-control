@@ -34,6 +34,38 @@
         "ZypRoller 交叉訓練"
       ],
       "notes": "19:10 到場 (泊車優惠)"
+    },
+    {
+      "id": "sheng",
+      "name": "Sheng",
+      "relationship": "朋友",
+      "company": "",
+      "interests": ["TBD"],
+      "recentNews": "",
+      "lastContact": "",
+      "nextMeetup": "TBD",
+      "conversationTopics": [
+        "最近點呀？",
+        "有咩新鮮嘢？",
+        "得閒出嚟聚下！"
+      ],
+      "notes": "需要更新資料"
+    },
+    {
+      "id": "heidi",
+      "name": "Heidi",
+      "relationship": "朋友",
+      "company": "",
+      "interests": ["TBD"],
+      "recentNews": "",
+      "lastContact": "",
+      "nextMeetup": "TBD",
+      "conversationTopics": [
+        "最近點呀？",
+        "有咩新鮮嘢？",
+        "得閒出嚟聚下！"
+      ],
+      "notes": "需要更新資料"
     }
   ]
 }

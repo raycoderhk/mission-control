@@ -4,6 +4,7 @@ import eventsData from "../data/events.json";
 import friendsData from "../data/friends.json";
 import tasksData from "../data/tasks.json";
 import goalsData from "../data/goals.json";
+import analyticsData from "../data/analytics.json";
 
 export default function Home() {
   const today = new Date();
@@ -14,6 +15,7 @@ export default function Home() {
   const quarterlyGoals = goalsData.quarterly;
   const yearlyGoals = goalsData.yearly;
   const categories = goalsData.categories;
+  const analytics = analyticsData;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
@@ -149,13 +151,186 @@ export default function Home() {
           </div>
         </DashboardCard>
 
+        {/* Analytics Dashboard */}
+        <DashboardCard title="📈 Analytics Dashboard" color="blue" fullWidth>
+          <div className="space-y-6">
+            {/* API Usage */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">API Usage (This Month)</div>
+                <div className="text-2xl font-bold text-white">
+                  {analytics.apiUsage.current.thisMonth.toLocaleString()} / {analytics.apiUsage.quota.toLocaleString()}
+                </div>
+                <div className="mt-2">
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${analytics.apiUsage.current.percentageUsed < 50 ? 'bg-green-500' : analytics.apiUsage.current.percentageUsed < 80 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                      style={{ width: `${analytics.apiUsage.current.percentageUsed}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {analytics.apiUsage.current.percentageUsed}% used · {analytics.apiUsage.current.remaining.toLocaleString()} remaining
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Monthly Cost</div>
+                <div className="text-2xl font-bold text-white">
+                  ${analytics.costs.monthly.spent.toFixed(2)} / ${analytics.costs.monthly.budget.toFixed(2)}
+                </div>
+                <div className="mt-2">
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${analytics.costs.monthly.percentageUsed < 80 ? 'bg-green-500' : 'bg-yellow-500'}`}
+                      style={{ width: `${analytics.costs.monthly.percentageUsed}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {analytics.costs.monthly.percentageUsed}% of budget
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Active Agents</div>
+                <div className="text-2xl font-bold text-white">
+                  {analytics.agents.active} / 4
+                </div>
+                <div className="mt-2 space-y-1">
+                  {analytics.agents.list.map((agent) => (
+                    <div key={agent.id} className="flex justify-between text-xs">
+                      <span className="text-gray-300">{agent.name}</span>
+                      <span className="text-gray-400">{agent.requestsToday} req today</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Cost Breakdown */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-3">💰 Cost Breakdown</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {analytics.costs.breakdown.map((item, idx) => (
+                  <div key={idx} className="bg-slate-800/50 rounded-lg p-4">
+                    <div className="text-sm text-gray-400 mb-1">{item.service}</div>
+                    <div className="text-xl font-bold text-white">${item.spent.toFixed(2)}</div>
+                    <div className={`text-xs mt-1 ${item.status === 'under-budget' ? 'text-green-400' : item.status === 'free-tier' ? 'text-blue-400' : 'text-gray-400'}`}>
+                      {item.status === 'under-budget' && `Under budget ($${item.budget.toFixed(2)})`}
+                      {item.status === 'free-tier' && 'Free tier'}
+                      {item.status === 'free' && 'Free'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* System Status */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-3">🖥️ System Status</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Gateway */}
+                <div className="bg-slate-800/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <h4 className="font-semibold text-white">Gateway</h4>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Platform:</span>
+                      <span className="text-white">{analytics.system.gateway.platform} ({analytics.system.gateway.region})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Uptime:</span>
+                      <span className="text-green-400">{analytics.system.gateway.uptime} ({analytics.system.gateway.uptimeDays} days)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Status:</span>
+                      <span className="text-green-400">Running</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Channels */}
+                <div className="bg-slate-800/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <h4 className="font-semibold text-white">Channels</h4>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(analytics.system.channels).map(([name, channel]: [string, any]) => (
+                      <div key={name} className="flex justify-between items-center text-sm">
+                        <span className="text-gray-300 capitalize">{name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{channel.type}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded ${channel.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                            {channel.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Tools */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-3">🛠️ Active Tools</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {analytics.projects.activeTools.map((tool, idx) => (
+                  <div key={idx} className="bg-slate-800/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-2 h-2 rounded-full ${tool.status === 'working' || tool.status === 'deployed' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                      <h4 className="font-semibold text-white text-sm">{tool.name}</h4>
+                    </div>
+                    <div className="text-xs text-gray-400 mb-2">
+                      Status: <span className="text-green-400">{tool.status}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Data: {tool.dataSource}
+                    </div>
+                    {tool.url && (
+                      <a 
+                        href={tool.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:underline mt-1 block"
+                      >
+                        Open →
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Savings Highlight */}
+            <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-lg p-4 border border-green-500/30">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">💰</div>
+                <div>
+                  <h4 className="font-semibold text-white mb-1">Cost Optimization Success!</h4>
+                  <p className="text-sm text-gray-300">
+                    Switched from DeepSeek to Aliyun: <span className="text-green-400 font-bold">Saved ${analytics.costs.savings.vsDeepSeek.amount}/month ({analytics.costs.savings.vsDeepSeek.percentage}% savings)</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{analytics.costs.savings.vsDeepSeek.note}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DashboardCard>
+
         {/* Quick Stats */}
         <DashboardCard title="📊 Quick Stats" color="yellow">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatBox label="Events This Month" value={eventsData.upcoming.length} color="blue" />
-            <StatBox label="Pending Tasks" value={pendingTasks.length} color="green" />
-            <StatBox label="Friends Tracked" value={friends.length} color="purple" />
-            <StatBox label="Goals Active" value={monthlyGoals.length + quarterlyGoals.length + yearlyGoals.length} color="red" />
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+            <StatBox label="Events" value={eventsData.upcoming.length} color="blue" />
+            <StatBox label="Tasks" value={pendingTasks.length} color="green" />
+            <StatBox label="Friends" value={friends.length} color="purple" />
+            <StatBox label="Goals" value={monthlyGoals.length + quarterlyGoals.length + yearlyGoals.length} color="red" />
+            <StatBox label="API Used" value={`${analytics.apiUsage.current.percentageUsed}%`} color="green" />
+            <StatBox label="Cost" value={`${analytics.costs.monthly.percentageUsed}%`} color="blue" />
           </div>
         </DashboardCard>
 

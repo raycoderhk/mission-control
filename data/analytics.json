@@ -1,0 +1,180 @@
+{
+  "apiUsage": {
+    "provider": "Aliyun Coding Plan",
+    "plan": "Pro (¥39.9/month)",
+    "quota": 90000,
+    "current": {
+      "today": 1245,
+      "thisMonth": 15678,
+      "remaining": 74322,
+      "percentageUsed": 17.4
+    },
+    "dailyAverage": 750,
+    "projectedMonthly": 22500,
+    "status": "under-budget",
+    "lastUpdated": "2026-02-27T06:00:00Z"
+  },
+  "costs": {
+    "monthly": {
+      "budget": 40.00,
+      "spent": 32.50,
+      "remaining": 7.50,
+      "percentageUsed": 81.25,
+      "currency": "USD"
+    },
+    "breakdown": [
+      {
+        "service": "Aliyun API",
+        "spent": 32.50,
+        "budget": 40.00,
+        "status": "under-budget"
+      },
+      {
+        "service": "Zeabur Hosting",
+        "spent": 0.00,
+        "budget": 0.00,
+        "status": "free-tier"
+      },
+      {
+        "service": "Supabase",
+        "spent": 0.00,
+        "budget": 0.00,
+        "status": "free-tier"
+      },
+      {
+        "service": "Discord Bot",
+        "spent": 0.00,
+        "budget": 0.00,
+        "status": "free"
+      }
+    ],
+    "savings": {
+      "vsDeepSeek": {
+        "amount": 180.00,
+        "percentage": 85,
+        "note": "Switched from DeepSeek to Aliyun (92% savings)"
+      }
+    }
+  },
+  "agents": {
+    "active": 4,
+    "list": [
+      {
+        "id": "main",
+        "name": "Jarvis",
+        "model": "qwen3.5-plus",
+        "status": "active",
+        "requestsToday": 523,
+        "requestsMonth": 7845,
+        "specialty": "Main orchestrator"
+      },
+      {
+        "id": "coding",
+        "name": "Coding Agent",
+        "model": "qwen3-coder-plus",
+        "status": "active",
+        "requestsToday": 412,
+        "requestsMonth": 5234,
+        "specialty": "Coding tasks"
+      },
+      {
+        "id": "research",
+        "name": "Research Agent",
+        "model": "qwen3.5-plus",
+        "status": "active",
+        "requestsToday": 256,
+        "requestsMonth": 2156,
+        "specialty": "Research & analysis"
+      },
+      {
+        "id": "admin",
+        "name": "Admin Agent",
+        "model": "qwen-turbo",
+        "status": "active",
+        "requestsToday": 54,
+        "requestsMonth": 443,
+        "specialty": "Schedule & admin tasks"
+      }
+    ],
+    "totalRequestsToday": 1245,
+    "totalRequestsMonth": 15678
+  },
+  "system": {
+    "gateway": {
+      "status": "running",
+      "platform": "Zeabur",
+      "region": "Tokyo",
+      "uptime": "99.2%",
+      "uptimeDays": 7,
+      "lastRestart": "2026-02-20T00:00:00Z"
+    },
+    "channels": {
+      "telegram": {
+        "status": "active",
+        "type": "personal"
+      },
+      "discord": {
+        "status": "active",
+        "type": "guild",
+        "limitation": "DM only (needs permission fix)"
+      },
+      "webchat": {
+        "status": "active",
+        "type": "web"
+      }
+    },
+    "features": {
+      "kanban": "active",
+      "cron": "active (rate limit issue)",
+      "subagents": "restricted (Zeabur env)",
+      "webSearch": "pending (needs API config)"
+    }
+  },
+  "projects": {
+    "kanban": {
+      "total": 13,
+      "done": 9,
+      "todo": 3,
+      "inProgress": 0,
+      "blocked": 1
+    },
+    "activeTools": [
+      {
+        "name": "Polymarket CLI",
+        "status": "working",
+        "dataSource": "Mock Data"
+      },
+      {
+        "name": "OpenClaw Status CLI",
+        "status": "working",
+        "dataSource": "Real (config files)"
+      },
+      {
+        "name": "Kanban Manager",
+        "status": "working",
+        "dataSource": "Real (JSON file)"
+      },
+      {
+        "name": "Mission Control",
+        "status": "deployed",
+        "dataSource": "Real (JSON files)",
+        "url": "https://misson-dashboard.zeabur.app/"
+      }
+    ]
+  },
+  "trends": {
+    "apiUsage": [
+      { "date": "2026-02-21", "requests": 1823 },
+      { "date": "2026-02-22", "requests": 2145 },
+      { "date": "2026-02-23", "requests": 1956 },
+      { "date": "2026-02-24", "requests": 2234 },
+      { "date": "2026-02-25", "requests": 2089 },
+      { "date": "2026-02-26", "requests": 2186 },
+      { "date": "2026-02-27", "requests": 1245 }
+    ],
+    "costs": [
+      { "month": "2026-01", "spent": 39.90 },
+      { "month": "2026-02", "spent": 32.50, "projected": 39.90 }
+    ]
+  }
+}

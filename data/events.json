@@ -1,0 +1,84 @@
+{
+  "upcoming": [
+    {
+      "id": "evt-001",
+      "title": "匹克球 (Family)",
+      "date": "2026-02-27",
+      "time": "16:00-17:00",
+      "location": "Clubhouse",
+      "type": "family",
+      "priority": "high",
+      "notes": "帶：兒子女兒衣服鞋、球拍、球、水、毛巾"
+    },
+    {
+      "id": "evt-002",
+      "title": "女兒學校家長日",
+      "date": "2026-02-28",
+      "time": "10:50",
+      "location": "學校",
+      "type": "family",
+      "priority": "high",
+      "notes": "媽咪同女兒去"
+    },
+    {
+      "id": "evt-003",
+      "title": "匹克球 (Pulley)",
+      "date": "2026-03-10",
+      "time": "19:00-21:00",
+      "location": "Tsuen Wan Pickledise",
+      "type": "friends",
+      "priority": "medium",
+      "notes": "Pulley 預計 19:10 到場 (泊車安排)"
+    },
+    {
+      "id": "evt-004",
+      "title": "兒子學校家長日",
+      "date": "2026-03-07",
+      "time": "TBC",
+      "location": "學校",
+      "type": "family",
+      "priority": "high",
+      "notes": "需確認時間"
+    },
+    {
+      "id": "evt-005",
+      "title": "學校旅行",
+      "date": "2026-03-08",
+      "time": "08:15-18:00",
+      "location": "科大及西貢鹽田梓",
+      "type": "family",
+      "priority": "high",
+      "notes": ""
+    },
+    {
+      "id": "evt-006",
+      "title": "學校旅行 + 同鄉會晚宴",
+      "date": "2026-03-14",
+      "time": "TBC",
+      "location": "流浮山",
+      "type": "family",
+      "priority": "medium",
+      "notes": "需確認時間"
+    },
+    {
+      "id": "evt-007",
+      "title": "兒子生日",
+      "date": "2026-03-15",
+      "time": "全天",
+      "location": "家中",
+      "type": "family",
+      "priority": "high",
+      "notes": ""
+    },
+    {
+      "id": "evt-008",
+      "title": "結婚周年紀念日",
+      "date": "2026-03-17",
+      "time": "全天",
+      "location": "海洋公園萬豪酒店",
+      "type": "family",
+      "priority": "high",
+      "notes": "Membership 套餐 coupon and spa"
+    }
+  ]
+}

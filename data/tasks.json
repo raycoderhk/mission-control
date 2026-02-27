@@ -1,0 +1,58 @@
+{
+  "tasks": [
+    {
+      "id": "task-001",
+      "title": "Maxim's 現金券使用",
+      "description": "$250 電子現金券 × 2 (盆菜購買)",
+      "dueDate": "2026-03-15",
+      "priority": "high",
+      "status": "pending",
+      "category": "personal"
+    },
+    {
+      "id": "task-002",
+      "title": "確認兒子學校家長日時間",
+      "description": "3 月 7 日家長日，需確認具體時間",
+      "dueDate": "2026-03-01",
+      "priority": "high",
+      "status": "pending",
+      "category": "family"
+    },
+    {
+      "id": "task-003",
+      "title": "確認 3 月 14 日活動時間",
+      "description": "流浮山學校旅行和同鄉會晚宴",
+      "dueDate": "2026-03-01",
+      "priority": "medium",
+      "status": "pending",
+      "category": "family"
+    },
+    {
+      "id": "task-004",
+      "title": "Discord 頻道權限修復",
+      "description": "Bot 回應 DM 但不在頻道中回應",
+      "dueDate": "2026-02-28",
+      "priority": "medium",
+      "status": "pending",
+      "category": "tech"
+    },
+    {
+      "id": "task-005",
+      "title": "配置 Web Search API",
+      "description": "Brave API 或 Devbox",
+      "dueDate": "2026-02-28",
+      "priority": "high",
+      "status": "pending",
+      "category": "tech"
+    },
+    {
+      "id": "task-006",
+      "title": "修復早晨報紙 Cron Job",
+      "description": "Rate limit 問題，需要請求節流",
+      "dueDate": "2026-02-28",
+      "priority": "medium",
+      "status": "pending",
+      "category": "tech"
+    }
+  ]
+}

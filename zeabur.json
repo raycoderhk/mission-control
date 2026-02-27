@@ -1,0 +1,15 @@
+{
+  "$schema": "https://zeabur.com/schema.json",
+  "name": "mission-control",
+  "description": "Raymond's Productivity Dashboard",
+  "envs": {
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "command": "npm run build",
+    "outputDir": ".next"
+  },
+  "start": {
+    "command": "npm run start"
+  }
+}

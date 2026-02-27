@@ -1,0 +1,39 @@
+{
+  "friends": [
+    {
+      "id": "elton",
+      "name": "Elton",
+      "relationship": "家人",
+      "company": "Yau Hing (HK) Co Ltd / YHK Design Limited",
+      "interests": ["設計", "健身產品", "創業"],
+      "recentNews": "ZypRoller 獲得 iF DESIGN AWARD 2026!",
+      "lastContact": "2026-02-27",
+      "nextMeetup": "TBC",
+      "conversationTopics": [
+        "iF 獎慶祝計劃",
+        "ZypRoller 銷售渠道",
+        "匹克球作為推廣渠道",
+        "投資者/合作機會"
+      ],
+      "notes": "已發送 WhatsApp 恭喜訊息"
+    },
+    {
+      "id": "pulley",
+      "name": "Pulley",
+      "relationship": "匹克球友",
+      "company": "",
+      "interests": ["匹克球", "運動", "健身"],
+      "recentNews": "",
+      "lastContact": "2026-02-27",
+      "nextMeetup": "2026-03-10 19:00 (Tsuen Wan Pickledise)",
+      "conversationTopics": [
+        "最近打球進展",
+        "比賽/聯賽興趣",
+        "裝備升級",
+        "恆常聚會安排",
+        "ZypRoller 交叉訓練"
+      ],
+      "notes": "19:10 到場 (泊車優惠)"
+    }
+  ]
+}

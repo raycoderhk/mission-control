@@ -65,6 +65,36 @@ export default function Home() {
         </p>
       </header>
 
+      {/* Quick Links / Apps */}
+      <DashboardCard title="🎮 Quick Apps" color="purple">
+        <div className="space-y-3">
+          <a
+            href="/pickleball"
+            className="block bg-purple-800/50 rounded-lg p-4 border-l-4 border-purple-500 hover:bg-purple-700/50 transition-all"
+          >
+            <h3 className="font-semibold text-white text-lg">🏓 Pickleball Master</h3>
+            <p className="text-sm text-gray-400 mt-1">匹克球挑戰遊戲 - 成為大師！</p>
+            <div className="flex gap-2 mt-2">
+              <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-1 rounded">Game</span>
+              <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-1 rounded">Fun</span>
+            </div>
+          </a>
+          
+          <div className="bg-slate-800/50 rounded-lg p-4 border-l-4 border-gray-500 opacity-50">
+            <h3 className="font-semibold text-white text-lg">📊 Kanban Board</h3>
+            <p className="text-sm text-gray-400 mt-1">External Link</p>
+            <a
+              href="https://kanban-board.zeabur.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-400 hover:underline mt-2 inline-block"
+            >
+              Open Kanban →
+            </a>
+          </div>
+        </div>
+      </DashboardCard>
+
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Upcoming Events */}

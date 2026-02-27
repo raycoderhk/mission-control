@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import eventsData from "../data/events.json";
 import friendsData from "../data/friends.json";
 import tasksData from "../data/tasks.json";
@@ -7,6 +8,34 @@ import goalsData from "../data/goals.json";
 import analyticsData from "../data/analytics.json";
 
 export default function Home() {
+  const [analytics, setAnalytics] = useState(analyticsData);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Fetch real-time analytics data on mount
+    const fetchAnalytics = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/analytics");
+        if (response.ok) {
+          const data = await response.json();
+          setAnalytics(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch analytics, using cached data:", error);
+        // Fall back to cached data (already set as initial state)
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchAnalytics, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const today = new Date();
   const upcomingEvents = eventsData.upcoming.slice(0, 5);
   const pendingTasks = tasksData.tasks.filter((t) => t.status === "pending");
@@ -15,7 +44,6 @@ export default function Home() {
   const quarterlyGoals = goalsData.quarterly;
   const yearlyGoals = goalsData.yearly;
   const categories = goalsData.categories;
-  const analytics = analyticsData;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
@@ -153,6 +181,11 @@ export default function Home() {
 
         {/* Analytics Dashboard */}
         <DashboardCard title="📈 Analytics Dashboard" color="blue" fullWidth>
+          {isLoading && (
+            <div className="mb-4 text-sm text-blue-400 animate-pulse">
+              🔄 Fetching real-time data...
+            </div>
+          )}
           <div className="space-y-6">
             {/* API Usage */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -318,6 +351,14 @@ export default function Home() {
                   <p className="text-xs text-gray-400 mt-1">{analytics.costs.savings.vsDeepSeek.note}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Last Updated */}
+            <div className="text-xs text-gray-500 text-center">
+              Last updated: {analytics.lastUpdated ? new Date(analytics.lastUpdated).toLocaleString() : 'N/A'}
+              {analytics.apiUsage?.note && (
+                <div className="mt-1 text-blue-400">⚠️ {analytics.apiUsage.note}</div>
+              )}
             </div>
           </div>
         </DashboardCard>

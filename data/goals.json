@@ -1,0 +1,124 @@
+{
+  "monthly": [
+    {
+      "id": "goal-m-001",
+      "title": "匹克球恆常練習",
+      "description": "每月至少打 4 次匹克球",
+      "category": "health",
+      "target": 4,
+      "current": 2,
+      "unit": "次",
+      "status": "in-progress",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "goal-m-002",
+      "title": "家庭時間",
+      "description": "每週至少一次家庭活動",
+      "category": "family",
+      "target": 4,
+      "current": 1,
+      "unit": "次",
+      "status": "in-progress",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "goal-m-003",
+      "title": "Maxim's 現金券使用",
+      "description": "使用 $250 x 2 電子現金券",
+      "category": "personal",
+      "target": 1,
+      "current": 0,
+      "unit": "次",
+      "status": "not-started",
+      "dueDate": "2026-03-15"
+    }
+  ],
+  "quarterly": [
+    {
+      "id": "goal-q-001",
+      "title": "Mission Control 系統完善",
+      "description": "建立完整嘅生產力工具系統",
+      "category": "work",
+      "target": 10,
+      "current": 3,
+      "unit": "個工具",
+      "status": "in-progress",
+      "dueDate": "2026-06-30"
+    },
+    {
+      "id": "goal-q-002",
+      "title": "健康檢查",
+      "description": "完成年度體格檢查",
+      "category": "health",
+      "target": 1,
+      "current": 0,
+      "unit": "次",
+      "status": "not-started",
+      "dueDate": "2026-06-30"
+    },
+    {
+      "id": "goal-q-003",
+      "title": "家庭旅行",
+      "description": "安排一次家庭短途旅行",
+      "category": "family",
+      "target": 1,
+      "current": 0,
+      "unit": "次",
+      "status": "not-started",
+      "dueDate": "2026-06-30"
+    },
+    {
+      "id": "goal-q-004",
+      "title": "閱讀計劃",
+      "description": "每月讀 2 本書",
+      "category": "personal",
+      "target": 6,
+      "current": 1,
+      "unit": "本",
+      "status": "in-progress",
+      "dueDate": "2026-06-30"
+    }
+  ],
+  "yearly": [
+    {
+      "id": "goal-y-001",
+      "title": "結婚周年慶祝",
+      "description": "3 月 17 日海洋公園萬豪酒店慶祝",
+      "category": "family",
+      "target": 1,
+      "current": 0,
+      "unit": "次",
+      "status": "in-progress",
+      "dueDate": "2026-03-17"
+    },
+    {
+      "id": "goal-y-002",
+      "title": "子女學業支持",
+      "description": "參加所有家長日及學校活動",
+      "category": "family",
+      "target": 10,
+      "current": 2,
+      "unit": "次",
+      "status": "in-progress",
+      "dueDate": "2026-12-31"
+    },
+    {
+      "id": "goal-y-003",
+      "title": "財務規劃",
+      "description": "完成年度儲蓄目標",
+      "category": "work",
+      "target": 100,
+      "current": 20,
+      "unit": "%",
+      "status": "in-progress",
+      "dueDate": "2026-12-31"
+    }
+  ],
+  "categories": {
+    "health": { "name": "健康", "color": "green", "icon": "💪" },
+    "family": { "name": "家庭", "color": "purple", "icon": "👨‍👩‍👧‍👦" },
+    "work": { "name": "工作", "color": "blue", "icon": "💼" },
+    "personal": { "name": "個人", "color": "yellow", "icon": "🎯" }
+  }
+}

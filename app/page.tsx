@@ -329,8 +329,8 @@ export default function Home() {
             <StatBox label="Tasks" value={pendingTasks.length} color="green" />
             <StatBox label="Friends" value={friends.length} color="purple" />
             <StatBox label="Goals" value={monthlyGoals.length + quarterlyGoals.length + yearlyGoals.length} color="red" />
-            <StatBox label="API Used" value={`${analytics.apiUsage.current.percentageUsed}%`} color="green" />
-            <StatBox label="Cost" value={`${analytics.costs.monthly.percentageUsed}%`} color="blue" />
+            <StatBox label="API Used" value={analytics.apiUsage.current.percentageUsed} color="green" suffix="%" />
+            <StatBox label="Cost" value={analytics.costs.monthly.percentageUsed} color="blue" suffix="%" />
           </div>
         </DashboardCard>
 
@@ -401,10 +401,12 @@ function StatBox({
   label,
   value,
   color,
+  suffix = "",
 }: {
   label: string;
   value: number;
   color: string;
+  suffix?: string;
 }) {
   const colorClasses: Record<string, string> = {
     blue: "bg-blue-500/20 text-blue-400",
@@ -416,7 +418,7 @@ function StatBox({
 
   return (
     <div className={`${colorClasses[color]} rounded-lg p-4 text-center`}>
-      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-2xl font-bold">{value}{suffix}</div>
       <div className="text-xs opacity-80">{label}</div>
     </div>
   );

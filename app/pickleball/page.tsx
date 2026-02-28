@@ -1,310 +1,634 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-export default function PickleballGame() {
-  const [gameState, setGameState] = useState({
-    playerName: '',
-    score: 0,
-    level: 1,
-    streak: 0,
-    gamesPlayed: 0,
-    title: '🌱 新手'
+// 遊戲常數
+const COURT_WIDTH = 800;
+const COURT_HEIGHT = 500;
+const PADDLE_WIDTH = 15;
+const PADDLE_HEIGHT = 80;
+const BALL_SIZE = 12;
+const NET_HEIGHT = 150;
+const NET_WIDTH = 4;
+
+// 物理常數
+const GRAVITY = 0.3;
+const FRICTION = 0.99;
+const BOUNCE_DAMPING = 0.85;
+const INITIAL_BALL_SPEED = 5;
+const MAX_BALL_SPEED = 12;
+
+// 遊戲狀態
+type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
+
+// 波嘅狀態
+interface Ball {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  speed: number;
+  trail: { x: number; y: number }[];
+}
+
+// 球拍狀態
+interface Paddle {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  vy: number;
+  isAI: boolean;
+  score: number;
+}
+
+export default function PickleballGameAdvanced() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [gameState, setGameState] = useState<GameState>('menu');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [playerScore, setPlayerScore] = useState(0);
+  const [aiScore, setAiScore] = useState(0);
+  const [rallyCount, setRallyCount] = useState(0);
+  const [maxRally, setMaxRally] = useState(0);
+  
+  // 遊戲對象
+  const ballRef = useRef<Ball>({
+    x: COURT_WIDTH / 2,
+    y: COURT_HEIGHT / 2,
+    vx: INITIAL_BALL_SPEED,
+    vy: 0,
+    speed: INITIAL_BALL_SPEED,
+    trail: []
   });
+  
+  const playerPaddleRef = useRef<Paddle>({
+    x: 50,
+    y: COURT_HEIGHT / 2 - PADDLE_HEIGHT / 2,
+    width: PADDLE_WIDTH,
+    height: PADDLE_HEIGHT,
+    vy: 0,
+    isAI: false,
+    score: 0
+  });
+  
+  const aiPaddleRef = useRef<Paddle>({
+    x: COURT_WIDTH - 50 - PADDLE_WIDTH,
+    y: COURT_HEIGHT / 2 - PADDLE_HEIGHT / 2,
+    width: PADDLE_WIDTH,
+    height: PADDLE_HEIGHT,
+    vy: 0,
+    isAI: true,
+    score: 0
+  });
+  
+  const keysRef = useRef<{ [key: string]: boolean }>({});
+  const mouseXRef = useRef<number>(0);
+  const mouseYRef = useRef<number>(0);
+  const useMouseRef = useRef<boolean>(false);
 
-  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'game' | 'quiz' | 'reflex' | 'serve'>('welcome');
-  const [quizState, setQuizState] = useState({ currentQuestion: 0, score: 0, questions: [] as any[] });
-  const [reflexState, setReflexState] = useState({ waiting: false, startTime: 0, result: '' });
-  const [feedback, setFeedback] = useState('');
-
-  const levels = [
-    { level: 1, title: "🌱 新手", minScore: 0 },
-    { level: 2, title: "🎾 初學者", minScore: 20 },
-    { level: 3, title: "🎯 中級玩家", minScore: 40 },
-    { level: 4, title: "⭐ 高級玩家", minScore: 70 },
-    { level: 5, title: "🏆 匹克球大師", minScore: 100 }
-  ];
-
-  const questions = [
-    { q: "匹克球嘅英文係咩？", options: ["A) Tennis", "B) Pickleball", "C) Badminton", "D) Squash"], answer: 1, points: 10 },
-    { q: "一個標準匹克球場有幾呎長？", options: ["A) 20 呎", "B) 30 呎", "C) 44 呎", "D) 60 呎"], answer: 2, points: 15 },
-    { q: "匹克球比賽通常係幾分制？", options: ["A) 11 分", "B) 15 分", "C) 21 分", "D) 25 分"], answer: 0, points: 10 },
-    { q: "\"Kitchen\" 在匹克球中指的是什麼？", options: ["A) 休息區", "B) 發球區", "C) 非截擊區", "D) 觀眾區"], answer: 2, points: 15 },
-    { q: "匹克球拍通常用咩材料做？", options: ["A) 木", "B) 金屬", "C) 複合材料", "D) 塑料"], answer: 2, points: 10 },
-    { q: "雙打比賽有幾多人參與？", options: ["A) 2 人", "B) 3 人", "C) 4 人", "D) 6 人"], answer: 2, points: 5 },
-  ];
-
-  const updateLevel = (score: number) => {
-    for (let i = levels.length - 1; i >= 0; i--) {
-      if (score >= levels[i].minScore) {
-        return { level: levels[i].level, title: levels[i].title };
-      }
-    }
-    return { level: 1, title: '🌱 新手' };
-  };
-
-  const startQuiz = () => {
-    const shuffled = [...questions].sort(() => Math.random() - 0.5).slice(0, 3);
-    setQuizState({ currentQuestion: 0, score: 0, questions: shuffled });
-    setCurrentScreen('quiz');
-  };
-
-  const answerQuestion = (index: number) => {
-    const q = quizState.questions[quizState.currentQuestion];
-    const isCorrect = index === q.answer;
+  // 初始化遊戲
+  const initGame = useCallback(() => {
+    ballRef.current = {
+      x: COURT_WIDTH / 2,
+      y: COURT_HEIGHT / 2,
+      vx: Math.random() > 0.5 ? INITIAL_BALL_SPEED : -INITIAL_BALL_SPEED,
+      vy: (Math.random() - 0.5) * 4,
+      speed: INITIAL_BALL_SPEED,
+      trail: []
+    };
     
-    if (isCorrect) {
-      const points = q.points + (gameState.streak >= 3 ? 5 : 0);
-      const newScore = gameState.score + points;
-      const newStreak = gameState.streak + 1;
-      const levelInfo = updateLevel(newScore);
-      
-      setGameState({
-        ...gameState,
-        score: newScore,
-        streak: newStreak,
-        ...levelInfo
-      });
-      
-      setFeedback(`✅ 正確！${points} 分 ${gameState.streak >= 3 ? '(🔥 連勝獎勵 +5!)' : ''}`);
-    } else {
-      setGameState({ ...gameState, streak: 0 });
-      setFeedback(`❌ 錯誤！正確答案係 ${q.options[q.answer]}`);
-    }
+    playerPaddleRef.current.y = COURT_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+    playerPaddleRef.current.score = 0;
+    
+    aiPaddleRef.current.y = COURT_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+    aiPaddleRef.current.score = 0;
+    
+    setPlayerScore(0);
+    setAiScore(0);
+    setRallyCount(0);
+    setMaxRally(0);
+  }, []);
 
-    setTimeout(() => {
-      setFeedback('');
-      if (quizState.currentQuestion >= 2) {
-        setGameState(prev => ({ ...prev, gamesPlayed: prev.gamesPlayed + 1 }));
-        setCurrentScreen('game');
-      } else {
-        setQuizState(prev => ({ ...prev, currentQuestion: prev.currentQuestion + 1 }));
+  // 重置波
+  const resetBall = useCallback((scorer: 'player' | 'ai') => {
+    ballRef.current = {
+      x: COURT_WIDTH / 2,
+      y: COURT_HEIGHT / 2,
+      vx: scorer === 'player' ? INITIAL_BALL_SPEED : -INITIAL_BALL_SPEED,
+      vy: (Math.random() - 0.5) * 4,
+      speed: INITIAL_BALL_SPEED,
+      trail: []
+    };
+  }, []);
+
+  // AI 邏輯
+  const updateAI = useCallback((paddle: Paddle, ball: Ball) => {
+    const difficultySettings = {
+      easy: { speed: 3, reaction: 0.02, error: 50 },
+      medium: { speed: 5, reaction: 0.05, error: 30 },
+      hard: { speed: 8, reaction: 0.1, error: 15 }
+    };
+    
+    const settings = difficultySettings[difficulty];
+    const targetY = ball.y - paddle.height / 2 + (Math.random() - 0.5) * settings.error;
+    
+    // 平滑移動
+    paddle.y += (targetY - paddle.y) * settings.reaction;
+    
+    // 限制速度
+    const dy = targetY - paddle.y;
+    if (Math.abs(dy) > settings.speed) {
+      paddle.y += Math.sign(dy) * settings.speed;
+    }
+    
+    // 邊界檢查
+    paddle.y = Math.max(0, Math.min(COURT_HEIGHT - paddle.height, paddle.y));
+  }, [difficulty]);
+
+  // 物理更新
+  const updatePhysics = useCallback(() => {
+    const ball = ballRef.current;
+    const player = playerPaddleRef.current;
+    const ai = aiPaddleRef.current;
+    
+    // 更新波嘅拖尾
+    ball.trail.push({ x: ball.x, y: ball.y });
+    if (ball.trail.length > 20) ball.trail.shift();
+    
+    // 應用重力
+    ball.vy += GRAVITY;
+    
+    // 應用摩擦力
+    ball.vx *= FRICTION;
+    ball.vy *= FRICTION;
+    
+    // 更新波位置
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+    
+    // 限制速度
+    const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+    if (speed > MAX_BALL_SPEED) {
+      ball.vx = (ball.vx / speed) * MAX_BALL_SPEED;
+      ball.vy = (ball.vy / speed) * MAX_BALL_SPEED;
+    }
+    
+    // 上牆壁碰撞
+    if (ball.y - BALL_SIZE / 2 < 0) {
+      ball.y = BALL_SIZE / 2;
+      ball.vy = -ball.vy * BOUNCE_DAMPING;
+    }
+    
+    // 下牆壁碰撞
+    if (ball.y + BALL_SIZE / 2 > COURT_HEIGHT) {
+      ball.y = COURT_HEIGHT - BALL_SIZE / 2;
+      ball.vy = -ball.vy * BOUNCE_DAMPING;
+    }
+    
+    // 玩家球拍碰撞
+    if (
+      ball.x - BALL_SIZE / 2 < player.x + player.width &&
+      ball.x + BALL_SIZE / 2 > player.x &&
+      ball.y > player.y &&
+      ball.y < player.y + player.height
+    ) {
+      // 計算碰撞點 (決定反彈角度)
+      const hitPos = (ball.y - player.y) / player.height;
+      const angle = (hitPos - 0.5) * Math.PI / 3; // ±60 度
+      
+      // 增加速度
+      ball.speed = Math.min(ball.speed + 0.5, MAX_BALL_SPEED);
+      
+      ball.vx = Math.cos(angle) * ball.speed;
+      ball.vy = Math.sin(angle) * ball.speed;
+      ball.x = player.x + player.width + BALL_SIZE / 2;
+      
+      // 增加連擊數
+      setRallyCount(prev => prev + 1);
+    }
+    
+    // AI 球拍碰撞
+    if (
+      ball.x + BALL_SIZE / 2 > ai.x &&
+      ball.x - BALL_SIZE / 2 < ai.x + ai.width &&
+      ball.y > ai.y &&
+      ball.y < ai.y + ai.height
+    ) {
+      const hitPos = (ball.y - ai.y) / ai.height;
+      const angle = (hitPos - 0.5) * Math.PI / 3;
+      
+      ball.speed = Math.min(ball.speed + 0.5, MAX_BALL_SPEED);
+      
+      ball.vx = -Math.cos(angle) * ball.speed;
+      ball.vy = Math.sin(angle) * ball.speed;
+      ball.x = ai.x - BALL_SIZE / 2;
+      
+      setRallyCount(prev => prev + 1);
+    }
+    
+    // 得分檢查
+    if (ball.x < 0) {
+      // AI 得分
+      setAiScore(prev => {
+        const newScore = prev + 1;
+        if (newScore >= 11) {
+          setGameState('gameover');
+        }
+        return newScore;
+      });
+      aiPaddleRef.current.score++;
+      resetBall('ai');
+      setRallyCount(prev => {
+        if (prev > maxRally) setMaxRally(prev);
+        return 0;
+      });
+    } else if (ball.x > COURT_WIDTH) {
+      // 玩家得分
+      setPlayerScore(prev => {
+        const newScore = prev + 1;
+        if (newScore >= 11) {
+          setGameState('gameover');
+        }
+        return newScore;
+      });
+      playerPaddleRef.current.score++;
+      resetBall('player');
+      setRallyCount(prev => {
+        if (prev > maxRally) setMaxRally(prev);
+        return 0;
+      });
+    }
+    
+    // 更新玩家球拍 (鍵盤/滑鼠)
+    if (useMouseRef.current) {
+      player.y = mouseYRef.current - player.height / 2;
+    } else {
+      if (keysRef.current['w'] || keysRef.current['arrowup']) {
+        player.y -= 8;
       }
-    }, 1500);
-  };
-
-  const startReflex = () => {
-    setCurrentScreen('reflex');
-    setReflexState({ waiting: false, startTime: 0, result: '' });
-  };
-
-  const reflexClick = () => {
-    if (!reflexState.waiting && !reflexState.startTime) {
-      setReflexState(prev => ({ ...prev, waiting: true }));
-      const delay = Math.random() * 3000 + 2000;
-      setTimeout(() => {
-        setReflexState(prev => ({ ...prev, waiting: false, startTime: Date.now() }));
-      }, delay);
-    } else if (reflexState.waiting) {
-      setReflexState({ waiting: false, startTime: 0, result: '太快啦！再試一次 🏓' });
-    } else {
-      const reaction = (Date.now() - reflexState.startTime) / 1000;
-      let points = 5, msg = '💪 繼續練習！';
-      
-      if (reaction < 0.2) { points = 30; msg = '🏆 世界級反應！'; }
-      else if (reaction < 0.3) { points = 20; msg = '⭐ 非常好！'; }
-      else if (reaction < 0.4) { points = 15; msg = '👍 不錯！'; }
-      else if (reaction < 0.5) { points = 10; msg = '🙂 平均'; }
-      
-      const newScore = gameState.score + points;
-      const levelInfo = updateLevel(newScore);
-      
-      setGameState({
-        ...gameState,
-        score: newScore,
-        gamesPlayed: gameState.gamesPlayed + 1,
-        ...levelInfo
-      });
-      
-      setReflexState({ 
-        waiting: false, 
-        startTime: 0, 
-        result: `${reaction.toFixed(3)} 秒 - ${msg} +${points}分！` 
-      });
+      if (keysRef.current['s'] || keysRef.current['arrowdown']) {
+        player.y += 8;
+      }
     }
+    
+    // 玩家球拍邊界
+    player.y = Math.max(0, Math.min(COURT_HEIGHT - player.height, player.y));
+    
+    // 更新 AI 球拍
+    updateAI(ai, ball);
+  }, [updateAI, maxRally, resetBall]);
+
+  // 渲染遊戲
+  const render = useCallback((ctx: CanvasRenderingContext2D) => {
+    const ball = ballRef.current;
+    const player = playerPaddleRef.current;
+    const ai = aiPaddleRef.current;
+    
+    // 清空畫布
+    ctx.fillStyle = '#1a472a'; // 草地綠色
+    ctx.fillRect(0, 0, COURT_WIDTH, COURT_HEIGHT);
+    
+    // 畫球場標記
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 2;
+    
+    // 中線
+    ctx.beginPath();
+    ctx.moveTo(COURT_WIDTH / 2, 0);
+    ctx.lineTo(COURT_WIDTH / 2, COURT_HEIGHT);
+    ctx.stroke();
+    
+    // 發球區
+    ctx.strokeRect(50, 0, COURT_WIDTH / 2 - 50, COURT_HEIGHT / 2);
+    ctx.strokeRect(50, COURT_HEIGHT / 2, COURT_WIDTH / 2 - 50, COURT_HEIGHT / 2);
+    ctx.strokeRect(COURT_WIDTH / 2 + 50, 0, COURT_WIDTH / 2 - 50, COURT_HEIGHT / 2);
+    ctx.strokeRect(COURT_WIDTH / 2 + 50, COURT_HEIGHT / 2, COURT_WIDTH / 2 - 50, COURT_HEIGHT / 2);
+    
+    // 畫網
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(COURT_WIDTH / 2 - NET_WIDTH / 2, COURT_HEIGHT / 2 - NET_HEIGHT / 2, NET_WIDTH, NET_HEIGHT);
+    
+    // 畫波嘅拖尾
+    ball.trail.forEach((pos, index) => {
+      const alpha = index / ball.trail.length * 0.5;
+      const size = BALL_SIZE * (index / ball.trail.length);
+      ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    // 畫波
+    ctx.fillStyle = '#ffff00';
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, BALL_SIZE / 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 畫玩家球拍 (藍色)
+    ctx.fillStyle = '#3498db';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+    
+    // 畫玩家球拍邊框
+    ctx.strokeStyle = '#2980b9';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(player.x, player.y, player.width, player.height);
+    
+    // 畫 AI 球拍 (紅色)
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
+    
+    // 畫 AI 球拍邊框
+    ctx.strokeStyle = '#c0392b';
+    ctx.strokeRect(ai.x, ai.y, ai.width, ai.height);
+    
+    // 畫計分板
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(10, 10, 200, 80);
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px Arial';
+    ctx.fillText(`Player: ${player.score}`, 20, 40);
+    ctx.fillText(`AI: ${ai.score}`, 20, 70);
+    
+    // 畫連擊數
+    if (rallyCount > 0) {
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText(`🔥 Rally: ${rallyCount}`, COURT_WIDTH - 150, 40);
+    }
+    
+    // 畫最大連擊
+    if (maxRally > 0) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = '16px Arial';
+      ctx.fillText(`Max Rally: ${maxRally}`, COURT_WIDTH - 150, 65);
+    }
+    
+    // 畫難度
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '14px Arial';
+    ctx.fillText(`Difficulty: ${difficulty.toUpperCase()}`, COURT_WIDTH - 150, 90);
+    
+    // 畫控制提示
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.font = '12px Arial';
+    ctx.fillText('W/S or Mouse to move', 10, COURT_HEIGHT - 10);
+  }, [rallyCount, maxRally, difficulty]);
+
+  // 遊戲循環
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    let animationId: number;
+    
+    const gameLoop = () => {
+      updatePhysics();
+      render(ctx);
+      animationId = requestAnimationFrame(gameLoop);
+    };
+    
+    gameLoop();
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, [gameState, updatePhysics, render]);
+
+  // 鍵盤事件
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      keysRef.current[e.key.toLowerCase()] = true;
+      useMouseRef.current = false;
+    };
+    
+    const handleKeyUp = (e: KeyboardEvent) => {
+      keysRef.current[e.key.toLowerCase()] = false;
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // 滑鼠事件
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = COURT_WIDTH / rect.width;
+      const scaleY = COURT_HEIGHT / rect.height;
+      
+      mouseXRef.current = (e.clientX - rect.left) * scaleX;
+      mouseYRef.current = (e.clientY - rect.top) * scaleY;
+      useMouseRef.current = true;
+    };
+    
+    canvas.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      canvas.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  // 觸控事件 (手機支援)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const scaleX = COURT_WIDTH / rect.width;
+      const scaleY = COURT_HEIGHT / rect.height;
+      
+      mouseYRef.current = (touch.clientY - rect.top) * scaleY;
+      useMouseRef.current = true;
+    };
+    
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    
+    return () => {
+      canvas.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
+  // 開始遊戲
+  const startGame = () => {
+    initGame();
+    setGameState('playing');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="max-w-4xl w-full">
         {/* Header */}
-        <div className="text-center text-white mb-8">
-          <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">🏓 Pickleball Master</h1>
-          <p className="text-xl opacity-90">匹克球挑戰遊戲</p>
+        <div className="text-center mb-6">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            🏓 Pickleball Master Pro
+          </h1>
+          <p className="text-gray-300">
+            高級匹克球對戰 - 同 AI 對決！
+          </p>
         </div>
 
-        {/* Welcome Screen */}
-        {currentScreen === 'welcome' && (
-          <div className="bg-white rounded-2xl p-8 shadow-2xl">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-purple-600 mb-4">歡迎來到匹克球挑戰！🎉</h2>
-              <p className="text-gray-600 mb-6 text-lg">通過各種挑戰提升你的等級，成為匹克球大師！</p>
-              
-              <input
-                type="text"
-                placeholder="請輸入你的名字"
-                className="w-full max-w-md px-6 py-4 text-xl border-2 border-purple-600 rounded-xl mb-6 text-center focus:outline-none focus:ring-2 focus:ring-purple-400"
-                value={gameState.playerName}
-                onChange={(e) => setGameState({ ...gameState, playerName: e.target.value })}
-                maxLength={20}
-              />
-              
-              <button
-                onClick={() => setCurrentScreen('game')}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl text-xl font-semibold hover:transform hover:scale-105 transition-all shadow-lg"
-              >
-                開始遊戲 🚀
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Game Menu */}
-        {currentScreen === 'game' && (
-          <div className="bg-white rounded-2xl p-8 shadow-2xl">
-            {/* Status Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-purple-600 to-blue-600 text-white p-4 rounded-xl text-center">
-                <div className="text-sm opacity-90 mb-1">玩家</div>
-                <div className="text-2xl font-bold">{gameState.playerName || '-'}</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-600 to-blue-600 text-white p-4 rounded-xl text-center">
-                <div className="text-sm opacity-90 mb-1">等級</div>
-                <div className="text-2xl font-bold">Lv.{gameState.level}</div>
-                <div className="text-xs mt-1">{gameState.title}</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-600 to-blue-600 text-white p-4 rounded-xl text-center">
-                <div className="text-sm opacity-90 mb-1">積分</div>
-                <div className="text-2xl font-bold">{gameState.score}</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-600 to-blue-600 text-white p-4 rounded-xl text-center">
-                <div className="text-sm opacity-90 mb-1">連勝</div>
-                <div className="text-2xl font-bold">{gameState.streak}</div>
-              </div>
-            </div>
-
-            {/* Menu Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <button
-                onClick={startQuiz}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-xl text-lg font-semibold hover:transform hover:scale-105 transition-all shadow-lg"
-              >
-                📝 知識挑戰
-              </button>
-              <button
-                onClick={startReflex}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-xl text-lg font-semibold hover:transform hover:scale-105 transition-all shadow-lg"
-              >
-                ⚡ 反應挑戰
-              </button>
-              <button
-                onClick={() => {
-                  setGameState(prev => ({ ...prev, gamesPlayed: prev.gamesPlayed + 1 }));
-                  setCurrentScreen('welcome');
-                }}
-                className="bg-gradient-to-r from-gray-600 to-gray-700 text-white p-6 rounded-xl text-lg font-semibold hover:transform hover:scale-105 transition-all shadow-lg"
-              >
-                🚪 退出遊戲
-              </button>
-            </div>
-
-            {/* Progress */}
-            <div className="bg-gray-100 p-6 rounded-xl">
-              <h3 className="text-xl font-bold text-gray-700 mb-3">🎯 下一目標</h3>
-              <p className="text-gray-600 mb-3">
-                再得 <span className="font-bold text-purple-600">
-                  {Math.max(0, levels[gameState.level]?.minScore - gameState.score || 0)}
-                </span> 分就可以升級！
-              </p>
-              <div className="w-full bg-gray-300 rounded-full h-4">
-                <div 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 h-4 rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (gameState.score / 100) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Quiz Screen */}
-        {currentScreen === 'quiz' && quizState.questions.length > 0 && (
-          <div className="bg-white rounded-2xl p-8 shadow-2xl">
+        {gameState === 'menu' && (
+          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/30 shadow-2xl">
+            <h2 className="text-3xl font-bold text-white text-center mb-6">
+              🎮 遊戲選單
+            </h2>
+            
+            {/* 難度選擇 */}
             <div className="mb-6">
-              <div className="w-full bg-gray-300 rounded-full h-3 mb-4">
-                <div 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all"
-                  style={{ width: `${((quizState.currentQuestion + 1) / 3) * 100}%` }}
-                ></div>
+              <label className="text-white text-lg block mb-3">選擇難度：</label>
+              <div className="flex gap-4 justify-center">
+                {(['easy', 'medium', 'hard'] as const).map((diff) => (
+                  <button
+                    key={diff}
+                    onClick={() => setDifficulty(diff)}
+                    className={`px-6 py-3 rounded-lg font-bold transition-all ${
+                      difficulty === diff
+                        ? 'bg-purple-600 text-white scale-105 shadow-lg'
+                        : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    {diff === 'easy' && '🟢 簡單'}
+                    {diff === 'medium' && '🟡 中等'}
+                    {diff === 'hard' && '🔴 困難'}
+                  </button>
+                ))}
               </div>
-              <p className="text-gray-600">問題 {quizState.currentQuestion + 1}/3</p>
             </div>
 
-            <div className="bg-purple-50 border-l-4 border-purple-600 p-6 rounded-r-xl mb-6">
-              <p className="text-xl font-semibold text-gray-800">{quizState.questions[quizState.currentQuestion].q}</p>
+            {/* 遊戲說明 */}
+            <div className="bg-slate-700/50 rounded-lg p-4 mb-6">
+              <h3 className="text-white font-bold mb-2">📖 遊戲說明：</h3>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>🎯 用 <strong>W/S 鍵</strong> 或 <strong>滑鼠</strong> 控制球拍</li>
+                <li>🏓 將波打向對手，讓對手接唔到</li>
+                <li>🔥 連續接波可以賺取連擊分數</li>
+                <li>📊 先攞到 11 分者勝</li>
+                <li>💡 波會受重力影響，注意彈道！</li>
+              </ul>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {quizState.questions[quizState.currentQuestion].options.map((opt: string, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => answerQuestion(i)}
-                  className="bg-white border-2 border-purple-600 text-purple-600 p-4 rounded-xl text-lg font-semibold hover:bg-purple-600 hover:text-white transition-all"
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-
-            {feedback && (
-              <div className={`p-4 rounded-xl text-center text-lg font-bold ${
-                feedback.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {feedback}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Reflex Screen */}
-        {currentScreen === 'reflex' && (
-          <div className="bg-white rounded-2xl p-8 shadow-2xl text-center">
-            <h2 className="text-3xl font-bold text-purple-600 mb-4">⚡ 反應挑戰</h2>
-            <p className="text-gray-600 mb-6 text-lg">當見到「🏓」時，立即按下面個按鈕！</p>
-            
-            <div className={`text-9xl mb-8 ${reflexState.startTime ? 'block' : 'hidden'}`}>
-              🏓
-            </div>
-            
+            {/* 開始按鈕 */}
             <button
-              onClick={reflexClick}
-              disabled={reflexState.waiting}
-              className={`bg-gradient-to-r from-purple-600 to-blue-600 text-white px-12 py-6 rounded-xl text-2xl font-semibold transition-all shadow-lg ${
-                reflexState.waiting ? 'opacity-50 cursor-not-allowed' : 'hover:transform hover:scale-105'
-              }`}
+              onClick={startGame}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105 shadow-lg"
             >
-              {reflexState.waiting ? '等待中...' : reflexState.startTime ? '按我！🏓' : '準備好未？按我開始！'}
-            </button>
-            
-            {reflexState.result && (
-              <div className="mt-8 p-6 bg-purple-50 rounded-xl">
-                <p className="text-2xl font-bold text-purple-600">{reflexState.result}</p>
-                <button
-                  onClick={startReflex}
-                  className="mt-4 bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition-all"
-                >
-                  再玩一次 🔄
-                </button>
-              </div>
-            )}
-            
-            <button
-              onClick={() => setCurrentScreen('game')}
-              className="mt-4 text-gray-600 hover:text-purple-600 transition-all"
-            >
-              ← 返回選單
+              🚀 開始遊戲
             </button>
           </div>
         )}
+
+        {/* Game Canvas */}
+        {gameState === 'playing' && (
+          <div className="relative">
+            <canvas
+              ref={canvasRef}
+              width={COURT_WIDTH}
+              height={COURT_HEIGHT}
+              className="w-full rounded-2xl border-4 border-purple-500/50 shadow-2xl cursor-none"
+              style={{ maxHeight: '60vh', aspectRatio: `${COURT_WIDTH}/${COURT_HEIGHT}` }}
+            />
+            
+            {/* Pause Button */}
+            <button
+              onClick={() => setGameState('paused')}
+              className="absolute top-4 right-4 bg-slate-800/80 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-all"
+            >
+              ⏸️ Pause
+            </button>
+          </div>
+        )}
+
+        {/* Paused */}
+        {gameState === 'paused' && (
+          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/30 shadow-2xl text-center">
+            <h2 className="text-3xl font-bold text-white mb-6">⏸️ 遊戲暫停</h2>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={() => setGameState('playing')}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+              >
+                ▶️ 繼續
+              </button>
+              
+              <button
+                onClick={() => setGameState('menu')}
+                className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+              >
+                🏠 主選單
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Game Over */}
+        {gameState === 'gameover' && (
+          <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/30 shadow-2xl text-center">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {playerScore > aiScore ? '🏆 你贏啦！' : '😢 你輸咗...'}
+            </h2>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 mb-6">
+              <div className="text-6xl font-bold text-white mb-2">
+                {playerScore} - {aiScore}
+              </div>
+              <div className="text-gray-300">
+                {playerScore > aiScore ? '恭喜！' : '再接再厲！'}
+              </div>
+            </div>
+            
+            {/* 統計 */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <div className="text-2xl font-bold text-purple-400">{maxRally}</div>
+                <div className="text-gray-300 text-sm">最大連擊</div>
+              </div>
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <div className="text-2xl font-bold text-yellow-400">{difficulty}</div>
+                <div className="text-gray-300 text-sm">難度</div>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={startGame}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+              >
+                🔄 再玩一次
+              </button>
+              
+              <button
+                onClick={() => setGameState('menu')}
+                className="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-bold py-3 px-6 rounded-lg transition-all"
+              >
+                🏠 主選單
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="text-center mt-6 text-gray-400 text-sm">
+          <p>🎮 Pickleball Master Pro v2.0 | 物理引擎 + AI 對戰</p>
+        </div>
       </div>
     </div>
   );

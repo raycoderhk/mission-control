@@ -97,7 +97,7 @@ export async function GET() {
       },
       agents: {
         active: 4,
-        list: [...],
+        list: ['Jarvis', 'Coding Agent', 'Research Agent', 'Admin Agent'],
       },
     },
   });

@@ -385,9 +385,9 @@ export default function Home() {
 
             {/* Last Updated */}
             <div className="text-xs text-gray-500 text-center">
-              Last updated: {analytics.lastUpdated ? new Date(analytics.lastUpdated).toLocaleString() : 'N/A'}
-              {analytics.apiUsage?.note && (
-                <div className="mt-1 text-blue-400">⚠️ {analytics.apiUsage.note}</div>
+              Last updated: {(analytics as any).lastUpdated ? new Date((analytics as any).lastUpdated).toLocaleString() : 'N/A'}
+              {(analytics as any).apiUsage?.note && (
+                <div className="mt-1 text-blue-400">⚠️ {(analytics as any).apiUsage.note}</div>
               )}
             </div>
           </div>

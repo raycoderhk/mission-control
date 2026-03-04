@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow anonymous insert (for first login)
-CREATE POLICY IF NOT EXISTS "Allow anonymous insert"
+DROP POLICY IF EXISTS "Allow anonymous insert" ON users;
+CREATE POLICY "Allow anonymous insert"
     ON users FOR INSERT
     WITH CHECK (true);
 
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can view own settings
+DROP POLICY IF EXISTS "Users view own settings" ON user_settings;
 CREATE POLICY "Users view own settings"
     ON user_settings FOR SELECT
     USING (auth.uid() = user_id OR user_id IN (
@@ -51,6 +53,7 @@ CREATE POLICY "Users view own settings"
     ));
 
 -- Policy: Users can update own settings
+DROP POLICY IF EXISTS "Users update own settings" ON user_settings;
 CREATE POLICY "Users update own settings"
     ON user_settings FOR UPDATE
     USING (auth.uid() = user_id OR user_id IN (
@@ -58,6 +61,7 @@ CREATE POLICY "Users update own settings"
     ));
 
 -- Policy: Users can insert own settings
+DROP POLICY IF EXISTS "Users insert own settings" ON user_settings;
 CREATE POLICY "Users insert own settings"
     ON user_settings FOR INSERT
     WITH CHECK (auth.uid() = user_id OR user_id IN (
@@ -90,6 +94,7 @@ CREATE TABLE IF NOT EXISTS user_events (
 ALTER TABLE user_events ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can view own events
+DROP POLICY IF EXISTS "Users view own events" ON user_events;
 CREATE POLICY "Users view own events"
     ON user_events FOR SELECT
     USING (auth.uid() = user_id OR user_id IN (
@@ -97,6 +102,7 @@ CREATE POLICY "Users view own events"
     ));
 
 -- Policy: Users can manage own events
+DROP POLICY IF EXISTS "Users manage own events" ON user_events;
 CREATE POLICY "Users manage own events"
     ON user_events FOR ALL
     USING (auth.uid() = user_id OR user_id IN (
@@ -130,6 +136,7 @@ CREATE TABLE IF NOT EXISTS user_goals (
 ALTER TABLE user_goals ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can manage own goals
+DROP POLICY IF EXISTS "Users manage own goals" ON user_goals;
 CREATE POLICY "Users manage own goals"
     ON user_goals FOR ALL
     USING (auth.uid() = user_id OR user_id IN (
@@ -163,6 +170,7 @@ CREATE TABLE IF NOT EXISTS user_friends (
 ALTER TABLE user_friends ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can manage own friends
+DROP POLICY IF EXISTS "Users manage own friends" ON user_friends;
 CREATE POLICY "Users manage own friends"
     ON user_friends FOR ALL
     USING (auth.uid() = user_id OR user_id IN (

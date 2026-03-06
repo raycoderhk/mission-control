@@ -1,6 +1,28 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { createClient } from "@supabase/supabase-js";
+import { JWT, DefaultJWT } from "next-auth/jwt";
+
+// Extend NextAuth types
+declare module "next-auth" {
+    interface Session {
+        user: {
+            id: string;
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+        } & DefaultSession["user"];
+    }
+    interface User extends DefaultUser {
+        id: string;
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT extends DefaultJWT {
+        id: string;
+    }
+}
 
 // Supabase client
 const supabase = createClient(

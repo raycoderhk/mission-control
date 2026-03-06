@@ -9,7 +9,7 @@ const supabase = createClient(
 );
 
 // Helper: Get or create user in Supabase
-async function getOrCreateUser(email: string, name: string, googleId: string, image?: string) {
+async function getOrCreateUser(email: string, name: string, googleId: string, image: string = '') {
     // Try to find existing user
     let { data: user, error: findError } = await supabase
         .from('users')
@@ -64,13 +64,13 @@ const handler = NextAuth({
     callbacks: {
         async signIn({ user, account, profile }) {
             if (account?.provider === "google" && profile) {
-                const email = user.email;
+                const email = user.email || '';
                 const name = user.name || '';
                 const googleId = account.providerAccountId;
-                const image = user.image || undefined;
+                const image = user.image ?? undefined;
 
                 // Get or create user in Supabase
-                const dbUser = await getOrCreateUser(email, name, googleId, image);
+                const dbUser = await getOrCreateUser(email, name, googleId, image || '');
                 
                 if (!dbUser) {
                     console.error('Failed to create user in database');

@@ -18,6 +18,32 @@ export async function GET() {
       costs: calculateCosts(usageData),
       agents: await fetchAgentStats(),
       system: systemStats,
+      projects: {
+        kanban: {
+          total: 21,
+          done: 15,
+          todo: 4,
+          inProgress: 1,
+          blocked: 1,
+        },
+        activeTools: [
+          {
+            name: 'Kanban Board',
+            status: 'production',
+            url: 'https://kanban-board.zeabur.app',
+          },
+          {
+            name: 'Mission Control',
+            status: 'development',
+            url: 'https://mission-control.zeabur.app',
+          },
+          {
+            name: 'Nutrition App',
+            status: 'production',
+            url: 'https://nutrition-app.zeabur.app',
+          },
+        ],
+      },
       lastUpdated: new Date().toISOString(),
     };
 

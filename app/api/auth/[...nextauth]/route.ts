@@ -34,7 +34,7 @@ const supabase = createClient(
 async function getOrCreateUser(email: string, name: string, googleId: string, image: string = '') {
     // Try to find existing user
     let { data: user, error: findError } = await supabase
-        .from('users')
+        .from('mc_users')
         .select('id')
         .eq('email', email)
         .single();
@@ -46,7 +46,7 @@ async function getOrCreateUser(email: string, name: string, googleId: string, im
     // Create user if doesn't exist
     if (!user) {
         const { data: newUser, error: insertError } = await supabase
-            .from('users')
+            .from('mc_users')
             .insert({
                 email,
                 name,

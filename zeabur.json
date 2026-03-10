@@ -1,6 +1,6 @@
 {
   "$schema": "https://zeabur.com/schema.json",
-  "name": "mission-dashboard",
+  "name": "mission-control",
   "description": "Raymond's Productivity Dashboard",
   "envs": {
     "NODE_ENV": "production"

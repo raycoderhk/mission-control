@@ -32,10 +32,6 @@ export async function GET() {
 }
 
 async function fetchAliyunUsage() {
-  if (!ALIYUN_API_KEY) {
-    throw new Error('ALIYUN_API_KEY not configured');
-  }
-
   // Note: Aliyun DashScope doesn't have a public usage API endpoint
   // We'll use the billing/usage data from the console or estimate based on request counts
   // For now, we'll fetch from our local tracking and enhance with real API calls
@@ -58,9 +54,11 @@ async function fetchAliyunUsage() {
     },
     dailyAverage: 0,
     projectedMonthly: 0,
-    status: 'unknown',
+    status: ALIYUN_API_KEY ? 'active' : 'not-configured',
     lastUpdated: new Date().toISOString(),
-    note: 'Real-time API integration pending - Aliyun billing API access required',
+    note: ALIYUN_API_KEY 
+      ? 'Real-time API integration pending - Aliyun billing API access required'
+      : 'ALIYUN_API_KEY not configured - showing placeholder data',
   };
 }
 

@@ -35,7 +35,7 @@ export async function GET() {
           {
             name: 'Mission Dashboard',
             status: 'development',
-            url: 'https://misson-dashboard.zeabur.app',
+            url: 'https://mission-dashboard.zeabur.app',
           },
           {
             name: 'Nutrition App',

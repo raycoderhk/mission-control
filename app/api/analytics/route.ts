@@ -33,9 +33,9 @@ export async function GET() {
             url: 'https://kanban-board.zeabur.app',
           },
           {
-            name: 'Mission Control',
+            name: 'Mission Dashboard',
             status: 'development',
-            url: 'https://mission-control.zeabur.app',
+            url: 'https://misson-dashboard.zeabur.app',
           },
           {
             name: 'Nutrition App',

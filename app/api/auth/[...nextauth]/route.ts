@@ -24,10 +24,10 @@ declare module "next-auth/jwt" {
     }
 }
 
-// Supabase client
+// Supabase client (use service role for auth to bypass RLS)
 const supabase = createClient(
     process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!
 );
 
 // Helper: Get or create user in Supabase

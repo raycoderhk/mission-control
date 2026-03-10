@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import eventsData from "../data/events.json";
 import friendsData from "../data/friends.json";
 import tasksData from "../data/tasks.json";
@@ -8,6 +9,7 @@ import goalsData from "../data/goals.json";
 import analyticsData from "../data/analytics.json";
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [analytics, setAnalytics] = useState(analyticsData);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,21 +50,60 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
       {/* Header */}
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">
-          🚀 Mission Control
-        </h1>
-        <p className="text-gray-400">
-          Raymond&apos;s Productivity Dashboard
-        </p>
-        <p className="text-gray-500 text-sm mt-1">
-          {today.toLocaleDateString("en-HK", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+      <header className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            🚀 Mission Control
+          </h1>
+          <p className="text-gray-400">
+            Raymond&apos;s Productivity Dashboard
+          </p>
+          <p className="text-gray-500 text-sm mt-1">
+            {today.toLocaleDateString("en-HK", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        </div>
+        
+        {/* Auth Button */}
+        <div>
+          {status === "loading" ? (
+            <button className="bg-purple-600 text-white px-6 py-2 rounded-lg opacity-50">
+              Loading...
+            </button>
+          ) : session ? (
+            <div className="flex items-center gap-3">
+              {session.user?.image && (
+                <img
+                  src={session.user.image}
+                  alt={session.user?.name || "User"}
+                  className="w-10 h-10 rounded-full border-2 border-purple-400"
+                />
+              )}
+              <div className="text-right">
+                <p className="text-white text-sm font-semibold">
+                  {session.user?.name || "User"}
+                </p>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-xs text-purple-300 hover:text-white underline"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <a
+              href="/auth/signin"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-all inline-block"
+            >
+              Sign in with Google
+            </a>
+          )}
+        </div>
       </header>
 
       {/* Quick Links / Apps */}
